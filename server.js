@@ -3,6 +3,7 @@ const express = require("express")
 const cors = require("cors");
 const connectDB = require('./config/mongodb');
 const connectCloudinary = require('./config/cloudinary');
+const { adminRouter } = require('./routes/admin.route');
 
 const app = express();
 const port = process.env.PORT || 8000
@@ -13,10 +14,12 @@ connectCloudinary()
 app.use(express.json())
 app.use(cors())
 
-app.get('/' , (req,res)=> {
+app.use('/admin', adminRouter)
+
+app.get('/', (req, res) => {
     res.send("huiiiiii")
 })
 
-app.listen(port , () => {
+app.listen(port, () => {
     console.log("http://localhost:8000 , SERVER STARTED")
 })
