@@ -2,7 +2,8 @@ const validator = require("validator")
 const cloudinary = require('cloudinary').v2;
 const doctormodel = require('../models/doctor.model')
 const bcrypt = require('bcrypt')
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
+const doctorModel = require("../models/doctor.model");
 
 
 // api for adding doctor 
@@ -11,8 +12,8 @@ const addDoctor = async (req, res) => {
 
     try {
 
-        console.log(req.body)
-        console.log(req.file)
+        // console.log(req.body)
+        // console.log(req.file)
 
         const { name, email, password, speciality, degree, experience, about, fee, address } = req.body;
 
@@ -107,4 +108,26 @@ const loginAdmin = async (req, res) => {
     }
 }
 
-module.exports = { addDoctor, loginAdmin }
+// get all doctors list for admin panel 
+
+const allDoctors = async (req,res) => {
+    try {
+
+        const doctors = await doctorModel.find({}).select('-password')
+        res.status(200).json({
+            success : true,
+            message : "data fetched",
+            doctors 
+        })
+
+        
+    } catch (err) {
+            
+res.status(500).json({
+            sucess: false, message: err.message
+        })
+
+    }
+}
+
+module.exports = { addDoctor, loginAdmin , allDoctors }

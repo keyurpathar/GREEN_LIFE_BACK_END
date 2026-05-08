@@ -16,10 +16,6 @@ app.use(cors())
 
 app.use('/admin', adminRouter)
 
-app.get('/', (req, res) => {
-    res.send("huiiiiii")
-})
-
 app.listen(port, () => {
     console.log("http://localhost:8000 , SERVER STARTED")
 })
