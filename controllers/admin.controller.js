@@ -11,6 +11,9 @@ const addDoctor = async (req, res) => {
 
     try {
 
+        console.log(req.body)
+        console.log(req.file)
+
         const { name, email, password, speciality, degree, experience, about, fee, address } = req.body;
 
         const imageFile = req.file
@@ -41,7 +44,7 @@ const addDoctor = async (req, res) => {
 
         const imageurl = imageUpload.secure_url
 
-        const parsedAddress = typeof address === "string" ? JSON.parse(address)  : address
+        const parsedAddress = typeof address === "string" ? JSON.parse(address) : address
 
         const doctorData = {
             name, email, image: imageurl, password: hashedpassword, speciality, degree, experience, about, fee,
@@ -58,6 +61,9 @@ const addDoctor = async (req, res) => {
     }
 
     catch (err) {
+        console.log('❌ ERROR NAME:', err.name)
+        console.log('❌ ERROR MESSAGE:', err.message)
+        console.log('❌ FULL ERROR:', err)
         res.status(500).json({
             sucess: false, message: err.message
         })
@@ -68,32 +74,32 @@ const addDoctor = async (req, res) => {
 
 // api for login admin 
 
-const loginAdmin = async (req,res) => {
+const loginAdmin = async (req, res) => {
 
-    try{
+    try {
 
-        const {email , password} = req.body;
+        const { email, password } = req.body;
 
-        if(email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD){
+        if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
 
-            const token = jwt.sign({email} , process.env.JWT_SECRET)
+            const token = jwt.sign({ email }, process.env.JWT_SECRET)
 
             res.status(200).json({
-                success : true,
+                success: true,
                 token
             })
-            
-        } else{
+
+        } else {
             return res.status(401).json({
-                success : false , 
-                message : "unvalid credentials"
+                success: false,
+                message: "unvalid credentials"
             })
         }
 
 
     }
 
-     catch (err) {
+    catch (err) {
         res.status(500).json({
             sucess: false, message: err.message
         })
@@ -101,4 +107,4 @@ const loginAdmin = async (req,res) => {
     }
 }
 
-module.exports = { addDoctor , loginAdmin}
+module.exports = { addDoctor, loginAdmin }

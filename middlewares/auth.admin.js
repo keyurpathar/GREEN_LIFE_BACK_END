@@ -15,7 +15,7 @@ const authAdmin = async (req, res, next) => {
 
         const token_decode = jwt.verify(admintoken, process.env.JWT_SECRET)
 
-        if (token_decode !== process.env.ADMIN_EMAIL + process.env.ADMIN_PASSWORD) {
+        if (token_decode.email !== process.env.ADMIN_EMAIL) {
             return res.status(401).json({
                 success: false,
                 message: "unauthorized"
@@ -28,6 +28,7 @@ const authAdmin = async (req, res, next) => {
 
     }
     catch (err) {
+        console.log(err)
         res.status(500).json({
             success: false,
             message: "internal server error"
