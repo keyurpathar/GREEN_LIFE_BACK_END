@@ -5,14 +5,14 @@ const doctorModel = require("../models/doctor.model");
 const changeAvailability = async (req, res) => {
     try {
 
-        const {docId} = req.body;
+        const { docId } = req.body;
 
         const docData = await doctorModel.findById(docId)
 
-        await doctorModel.findByIdAndUpdate(docId , {available : !docData.available})
+        await doctorModel.findByIdAndUpdate(docId, { available: !docData.available })
         res.json({
-            success : true,
-            message : "availability changed"
+            success: true,
+            message: "availability changed"
         })
 
 
@@ -29,4 +29,23 @@ const changeAvailability = async (req, res) => {
     }
 }
 
-module.exports = {changeAvailability}
+const doctorlist = async (req, res) => {
+    
+    try {
+
+        const doctors = await doctorModel.find({}).select(['-password', '-email'])
+
+        res.json({
+            success: true,
+            doctors
+        })
+
+    } catch (err) {
+        res.status(500).json({
+            sucess: false, message: err.message
+        })
+
+    }
+}
+
+module.exports = { changeAvailability , doctorlist }

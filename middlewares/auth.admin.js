@@ -5,8 +5,8 @@ const authAdmin = async (req, res, next) => {
     try {
 
         const { admintoken } = req.headers;
-        console.log('ALL HEADERS:', req.headers)
-        console.log('TOKEN:', admintoken)
+        // console.log('ALL HEADERS:', req.headers)
+        // console.log('TOKEN:', admintoken)
 
         if (!admintoken) {
             return res.status(401).json({
