@@ -2,6 +2,7 @@ const validator = require('validator')
 const bcrypt = require('bcrypt')
 const userModel = require('../models/user.model')
 const jwt = require('jsonwebtoken')
+const cloudinary = require('cloudinary').v2;
 
 
 // api to register an new user 
@@ -76,4 +77,72 @@ const loginUser = async (req, res) => {
     }
 }
 
-module.exports = { registerUser, loginUser };
+// api to get user profile page data 
+
+const getProfile = async (req, res) => {
+    try {
+        const { userId } = req.body;
+
+        if (!userId) {
+            return res.status(400).json({ message: "User ID is required" });
+        }
+
+        const user = await userModel.findById(userId).select("-password");
+
+        res.status(200).json({ success: true, message: "User profile fetched successfully", data: user });
+
+    } catch (error) {
+        
+        console.log(error);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+        
+    }
+}
+
+const updateProfile = async (req, res) => {
+    
+    try {
+        const { name , email, phone , address , dob , gender} = req.body;
+        const userId = req.body.userId || req.user_id;
+        const imageFile = req.file;
+
+        const missingFields = [];
+        if (!userId) missingFields.push('userId');
+        if (!name) missingFields.push('name');
+        if (!phone) missingFields.push('phone');
+        if (!address) missingFields.push('address');
+        if (!dob) missingFields.push('dob');
+        if (!gender) missingFields.push('gender');
+
+        if (missingFields.length > 0) {
+            return res.status(400).json({ message: "Missing fields: " + missingFields.join(', '), receivedBody: req.body });
+        }
+
+        let parsedAddress = address;
+        try {
+            if (typeof address === 'string') {
+                parsedAddress = JSON.parse(address);
+            }
+        } catch (e) {
+            console.log("Error parsing address", e);
+        }
+
+        const updateData = { name, email, phone, address: parsedAddress, dob, gender };
+
+        const user = await userModel.findByIdAndUpdate(userId, updateData, { new: true }).select("-password");
+
+        if(imageFile){
+            const uploadedImage = await cloudinary.uploader.upload(imageFile.path);
+            user.image = uploadedImage.secure_url;
+            await userModel.findByIdAndUpdate(userId, {image: user.image});
+        }
+
+        res.status(200).json({ success: true, message: "User profile updated successfully", data: user });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ success: false, message: "Internal Server Error: " + error.message });
+    }
+}
+
+module.exports = { registerUser, loginUser, getProfile, updateProfile };
