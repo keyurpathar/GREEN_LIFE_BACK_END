@@ -3,6 +3,8 @@ const bcrypt = require('bcrypt')
 const userModel = require('../models/user.model')
 const jwt = require('jsonwebtoken')
 const cloudinary = require('cloudinary').v2;
+const doctorModel = require('../models/doctor.model')
+const appointmentModel = require('../models/appointment.model')
 
 
 // api to register an new user 
@@ -153,4 +155,62 @@ const updateProfile = async (req, res) => {
     }
 }
 
-module.exports = { registerUser, loginUser, getProfile, updateProfile };
+// api to book an appointment 
+
+const bookAppointment = async (req, res) => {
+    
+    try {
+
+        const { userId , docId , slotDate , slotTime , amount} = req.body;
+
+        const doctorData = await doctorModel.findById(docId).select("-password");
+
+        if(!doctorData.available){
+            return res.status(404).json({ success: false, message: "Doctor not available" });
+        }
+      
+
+       let slots_booked = doctorData.slots_booked
+
+       if(slots_booked[slotDate]){
+           if(slots_booked[slotDate].includes(slotTime)){
+            return res.json({
+                success : false ,
+                message : "Slot already booked"
+            })
+           }else{
+            slots_booked[slotDate].push(slotTime)
+           }
+
+        }else{
+            slots_booked[slotDate] = []
+            slots_booked[slotDate].push(slotTime)
+        }
+
+        const userData = await userModel.findById(userId).select("-password");
+
+        delete doctorData.slots_booked ;
+
+        const appointmentdata = {
+            userId , docId , userData , doctorData , amount : doctorData.fee , slotDate , slotTime ,
+            date : Date.now()
+        }
+
+        const newAppointment = new appointmentModel(appointmentdata);
+        await newAppointment.save();
+
+        await doctorModel.findByIdAndUpdate(docId , {slots_booked});    
+
+        return res.status(200).json({
+            success : true ,
+            message : "Appointment booked successfully",
+            data : newAppointment
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ success: false, message: "Internal Server Error: " + error.message });
+    }
+}
+
+module.exports = { registerUser, loginUser, getProfile, updateProfile , bookAppointment };
