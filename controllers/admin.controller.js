@@ -130,4 +130,54 @@ res.status(500).json({
     }
 }
 
-module.exports = { addDoctor, loginAdmin , allDoctors }
+// api for updating doctor
+const updateDoctor = async (req, res) => {
+    try {
+        const docId = req.params.id;
+        const { name, email, speciality, degree, experience, about, fee, address } = req.body;
+        const imageFile = req.file;
+
+        const doctor = await doctorModel.findById(docId);
+        if (!doctor) {
+            return res.status(404).json({ success: false, message: "Doctor not found" });
+        }
+
+        const parsedAddress = typeof address === "string" ? JSON.parse(address) : address;
+
+        const updateData = {
+            name: name || doctor.name,
+            email: email || doctor.email,
+            speciality: speciality || doctor.speciality,
+            degree: degree || doctor.degree,
+            experience: experience || doctor.experience,
+            about: about || doctor.about,
+            fee: fee || doctor.fee,
+            address: parsedAddress || doctor.address
+        };
+
+        if (imageFile) {
+            const imageUpload = await cloudinary.uploader.upload(imageFile.path, { resource_type: "image" });
+            updateData.image = imageUpload.secure_url;
+        }
+
+        await doctorModel.findByIdAndUpdate(docId, updateData);
+
+        res.status(200).json({ success: true, message: "Doctor updated successfully" });
+
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+}
+
+// api for deleting doctor
+const deleteDoctor = async (req, res) => {
+    try {
+        const docId = req.params.id;
+        await doctorModel.findByIdAndDelete(docId);
+        res.status(200).json({ success: true, message: "Doctor deleted successfully" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+}
+
+module.exports = { addDoctor, loginAdmin, allDoctors, updateDoctor, deleteDoctor }
