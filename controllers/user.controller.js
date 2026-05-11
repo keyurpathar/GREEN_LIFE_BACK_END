@@ -46,6 +46,7 @@ const registerUser = async (req, res) => {
 }
 
 const loginUser = async (req, res) => {
+
     try {
         const { email, password } = req.body;
 
@@ -55,10 +56,11 @@ const loginUser = async (req, res) => {
 
         const user = await userModel.findOne({ email });
         if (!user) {
-            return res.status(404).json({ message: "User not found" });
+            return res.status(404).json({ message: "Invalid credentials" });
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
+
         if (!isPasswordValid) {
             return res.status(401).json({ message: "Invalid credentials" });
         }
@@ -80,11 +82,15 @@ const loginUser = async (req, res) => {
 // api to get user profile page data 
 
 const getProfile = async (req, res) => {
+
     try {
+
         const { userId } = req.body;
 
         if (!userId) {
+
             return res.status(400).json({ message: "User ID is required" });
+
         }
 
         const user = await userModel.findById(userId).select("-password");
@@ -102,6 +108,7 @@ const getProfile = async (req, res) => {
 const updateProfile = async (req, res) => {
     
     try {
+
         const { name , email, phone , address , dob , gender} = req.body;
         const userId = req.body.userId || req.user_id;
         const imageFile = req.file;
@@ -119,6 +126,7 @@ const updateProfile = async (req, res) => {
         }
 
         let parsedAddress = address;
+
         try {
             if (typeof address === 'string') {
                 parsedAddress = JSON.parse(address);
